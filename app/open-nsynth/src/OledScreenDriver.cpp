@@ -33,26 +33,12 @@ bool OledScreenDriver::setup(int i2cFd_, uint8_t address_){
 
 	// Send the screen setup commands.
 	static uint8_t setup0[] = {
-		0, 174, 213, 128, 168, 63, 211, 0, 64, 141, 20, 32,
-		0, 161, 200, 218, 18, 217, 241, 219, 64, 164, 166
-	};
-	static uint8_t setup1[] = {
-		0, 129, 207
-	};
-	static uint8_t setup2[] = {
-		0, 33, 0, 127, 34, 0, 7
+		0x00,0xae,0xd5,0x50,0xa8,0x3f,0xd3,0x00,0x40,0xb0,0x02,0x10,0xa1,0xc8,0xda,0x12,0x81,0x80,0xd9,0x02,0xdb,0x35,0xa4,0xa6,0xaf  //This is typical SH1106 init sequence
 	};
 
 	if(write(i2cFd, setup0, sizeof(setup0)) != sizeof(setup0)){
 		return false;
 	}
-	if(write(i2cFd, setup1, sizeof(setup1)) != sizeof(setup1)){
-		return false;
-	}
-	if(write(i2cFd, setup2, sizeof(setup2)) != sizeof(setup2)){
-		return false;
-	}
-
 	return true;
 }
 
@@ -68,7 +54,12 @@ void OledScreenDriver::draw(ofFbo &fbo){
 	ofPixels pixels;
 	fbo.readToPixels(pixels);
 
-	uint8_t buf[129];
+	uint8_t buf[133]; //SH1106 line is 132-byte + command byte
+	uint8_t cmd[4]; //init command array for column address and page
+	cmd[0] = 0x00;  //start cmd
+	cmd[1] = 0x02;  //lower column address 
+	cmd[2] = 0x10;  //higher column address
+	cmd[3] = 0xAF;  //set value to 175(0xAF) which will be the PAGE0 command after increment
 
 	// Write data command.
 	buf[0] = 64;
@@ -86,11 +77,16 @@ void OledScreenDriver::draw(ofFbo &fbo){
 
 		// Traverse the 8 rows.
 		for(int y=0; y<8; ++y){
-			for(int x=0; x<128; ++x){
+			for(int x=2; x<130; ++x){  //as SH1106 has 132 width, we center the 128-byte line from 2 to 130px
 				int set = pixels[pixelIdx] >= 127;
 				buf[x+1] |= set << y;
 				pixelIdx += 4;
 			}
+		}
+		//increment the PAGE command and send it
+		cmd[3]+=1;
+		if(write(i2cFd, cmd, sizeof(cmd)) != sizeof(cmd)){
+			break;
 		}
 
 		if(write(i2cFd, buf, sizeof(buf)) != sizeof(buf)){
