@@ -86,7 +86,7 @@ class ofApp : public ofBaseApp{
 		void audioOut(ofSoundBuffer& buffer) override;
 
 	private:
-		static constexpr int OLED_I2C_ADDR = 0x3c;
+		static constexpr int OLED_I2C_ADDR = 0x3c; //use 0x3c when DC pin is low, and 0x3d when DC pin is high
 		static constexpr int MCU_I2C_ADDR = 0x47;
 		static constexpr int OLED_BCM_RESET_PIN = 4;
 		static constexpr int GRID_SIZE = 11;
