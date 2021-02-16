@@ -8,5 +8,5 @@ Otherwise (pin DC=1 or connected to 3.3V), SH1106 address will be 0x3d and you d
 
 ### Notes
 The files which was changed:
-1. app/open-nsynth/src/OledScreenDriver.cpp
-2. app/open-nsynth/src/ofApp.h
+1. ![app/open-nsynth/src/OledScreenDriver.cpp](app/open-nsynth/src/OledScreenDriver.cpp)
+2. ![app/open-nsynth/src/ofApp.h](app/open-nsynth/src/ofApp.h)
